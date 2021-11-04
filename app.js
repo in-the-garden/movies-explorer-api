@@ -1,16 +1,24 @@
 const express = require('express');
 const mongoose = require('mongoose');
+
 require('dotenv').config();
 const cors = require('cors');
+
+// Обработка ошибок в routes
 const { errors } = require('celebrate');
-const userRoutes = require('./routes/user');
-const movieRoutes = require('./routes/movie');
-const auth = require('./middlewares/auth');
-const { createUser, login } = require('./controllers/user');
-const NotFoundError = require('./errors/not-found-err');
-const errorsHandler = require('./middlewares/errorsHandler');
+
+// Защита заголовков
+const helmet = require('helmet');
+
+// Зашитится от автоматических входов
+const limiter = require('./middlewares/rate-limiter');
+
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const { validateRegister, validateLogin } = require('./middlewares/validate');
+
+const routes = require('./routes/index');
+
+const errorsHandler = require('./middlewares/errorsHandler');
+const NotFoundError = require('./errors/not-found-err');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -21,7 +29,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
-
+app.use(helmet());
+app.use(limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -35,13 +44,7 @@ mongoose.connect('mongodb://localhost:27017/moviesdb', {
 // Подключаем логгер запросов
 app.use(requestLogger);
 
-app.post('/signup', validateRegister, createUser);
-app.post('/signin', validateLogin, login);
-
-app.use(auth);
-
-app.use('/movies', movieRoutes);
-app.use('/users', userRoutes);
+app.use(routes);
 
 // Подключаем логгер ошибок
 app.use(errorLogger);
@@ -58,5 +61,5 @@ app.use(errors());
 app.use(errorsHandler);
 
 app.listen(PORT, () => {
-  console.log(`We are live on ${PORT}`);
+  console.log(`You are listen ${PORT}`);
 });
