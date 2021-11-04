@@ -1,18 +1,18 @@
 const express = require('express');
 const mongoose = require('mongoose');
+require('dotenv').config();
 const cors = require('cors');
 const { errors } = require('celebrate');
-const userRoutes = require('./routes');
-const movieRoutes = require('./routes');
+const userRoutes = require('./routes/user');
+const movieRoutes = require('./routes/movie');
 const auth = require('./middlewares/auth');
 const { createUser, login } = require('./controllers/user');
 const NotFoundError = require('./errors/not-found-err');
 const errorsHandler = require('./middlewares/errorsHandler');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-// const { validateRegister } = require('./middlewares/validate');
-const { validateUserCreate, validateLogin } = require('./middlewares/validate');
+const { validateRegister, validateLogin } = require('./middlewares/validate');
 
-const { PORT = 3004 } = process.env;
+const { PORT = 3000 } = process.env;
 const app = express();
 
 app.use(cors({
@@ -25,7 +25,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-mongoose.connect('mongodb://localhost:27017/moviedb', {
+mongoose.connect('mongodb://localhost:27017/moviesdb', {
   useNewUrlParser: true,
 })
   .catch((err) => {
@@ -35,7 +35,7 @@ mongoose.connect('mongodb://localhost:27017/moviedb', {
 // Подключаем логгер запросов
 app.use(requestLogger);
 
-app.post('/signup', validateUserCreate, createUser);
+app.post('/signup', validateRegister, createUser);
 app.post('/signin', validateLogin, login);
 
 app.use(auth);

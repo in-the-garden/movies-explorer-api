@@ -1,8 +1,8 @@
 const userRoutes = require('express').Router();
 const { getUser, updateUserInfo } = require('../controllers/user');
-const { validateEmptyBodyRequest, validateProfileUpdate } = require('../middlewares/validate');
+const { validateUpdateInfo } = require('../middlewares/validate');
 
-userRoutes.get('/me', validateEmptyBodyRequest, getUser);
-userRoutes.patch('/me', validateProfileUpdate, updateUserInfo);
+userRoutes.get('/me', getUser);
+userRoutes.patch('/me', validateUpdateInfo, updateUserInfo);
 
 module.exports = userRoutes;
