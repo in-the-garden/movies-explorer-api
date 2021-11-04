@@ -39,7 +39,7 @@ module.exports.createMovie = (req, res, next) => {
     nameEN,
     thumbnail,
     movieId,
-    owner
+    owner,
   })
     .then((movie) => {
       res.status(STATUS_OK).send(movie);
