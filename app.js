@@ -24,7 +24,7 @@ const { PORT = 3000 } = process.env;
 const app = express();
 
 app.use(cors({
-  origin: ['localhost:3011', 'http://localhost:3011', 'http://mesto.pupkova.nomoredomains.club', 'https://mesto.pupkova.nomoredomains.club'],
+  origin: ['localhost:3011', 'http://localhost:3011'],
   methods: ['GET', 'PUT', 'POST', ' DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
