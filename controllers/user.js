@@ -1,10 +1,10 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { STATUS_OK } = require('../utils/constants');
 const NotFoundError = require('../errors/not-found-err');
 const ConflictError = require('../errors/conflict-err');
 const BadRequestError = require('../errors/bad-request-err');
+const config = require('../movies.config');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -16,10 +16,10 @@ module.exports.createUser = (req, res, next) => {
       if (checkedUser) {
         throw new ConflictError('Пользователь с таким email уже зарегистрирован');
       }
-      bcrypt.hash(password, 10)
+      return bcrypt.hash(password, 10)
         .then((hash) => {
           User.create({ name, email, password: hash })
-            .then((user) => res.status(STATUS_OK).send({
+            .then((user) => res.send({
               name: user.name,
               email: user.email,
             }));
@@ -41,7 +41,7 @@ module.exports.login = (req, res, next) => {
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+        NODE_ENV === 'production' ? JWT_SECRET : config.jwtSecretDev,
         { expiresIn: '7d' },
       );
 
@@ -56,7 +56,7 @@ module.exports.getUser = (req, res, next) => {
       if (!user) {
         throw new NotFoundError('Пользователь по указанному _id не найден');
       }
-      return res.status(STATUS_OK).send(user);
+      return res.send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
@@ -75,13 +75,15 @@ module.exports.updateUserInfo = (req, res, next) => {
       if (!user) {
         throw new NotFoundError('Пользователь с указанным _id не найден');
       }
-      return res.status(STATUS_OK).send(user);
+      return res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
-      } else {
-        next(err);
+      if (err.name === 'MongoError' && err.code === 11000) {
+        return next(new ConflictError('Пользователь с таким email уже зарегистрирован.'));
       }
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
+        return next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
+      }
+      return next(err);
     });
 };

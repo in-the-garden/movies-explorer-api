@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { linkRegex } = require('../utils/utils');
+const { isURL } = require('validator');
 
 const movieSchema = new mongoose.Schema({
   country: {
@@ -31,24 +31,33 @@ const movieSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: (link) => linkRegex.test(link),
-      message: 'Некорректный URL',
+      validator: (link) => {
+        if (!isURL(link)) {
+          throw new Error('Передан некорректный URL');
+        }
+      },
     },
   },
   trailer: {
     type: String,
     required: true,
     validate: {
-      validator: (link) => linkRegex.test(link),
-      message: 'Некорректный URL',
+      validator: (link) => {
+        if (!isURL(link)) {
+          throw new Error('Передан некорректный URL');
+        }
+      },
     },
   },
   thumbnail: {
     type: String,
     required: true,
     validate: {
-      validator: (link) => linkRegex.test(link),
-      message: 'Некорректный URL',
+      validator: (link) => {
+        if (!isURL(link)) {
+          throw new Error('Передан некорректный URL');
+        }
+      },
     },
   },
   owner: {

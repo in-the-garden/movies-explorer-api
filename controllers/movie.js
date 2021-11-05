@@ -1,12 +1,11 @@
 const Movie = require('../models/movie');
-const { STATUS_OK } = require('../utils/constants');
 const NotFoundError = require('../errors/not-found-err');
 const BadRequestError = require('../errors/bad-request-err');
 const ForbiddenError = require('../errors/forbidden-err');
 
 module.exports.getMovies = (req, res, next) => {
   Movie.find({})
-    .then((movies) => res.status(STATUS_OK).send(movies))
+    .then((movies) => res.send(movies))
     .catch(next);
 };
 
@@ -42,7 +41,7 @@ module.exports.createMovie = (req, res, next) => {
     owner,
   })
     .then((movie) => {
-      res.status(STATUS_OK).send(movie);
+      res.send(movie);
     })
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
@@ -63,8 +62,8 @@ module.exports.deleteMovie = (req, res, next) => {
       if (!Object.is(currentUser, movieInfo.owner)) {
         throw new ForbiddenError('Невозможно удалить карточку другого пользователя');
       }
-      Movie.findByIdAndRemove(req.params.movieId)
-        .then((movie) => res.status(STATUS_OK).send(movie));
+      return Movie.findByIdAndRemove(req.params.movieId)
+        .then((movie) => res.send(movie));
     })
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {

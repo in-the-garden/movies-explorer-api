@@ -13,6 +13,8 @@ const helmet = require('helmet');
 // Зашитится от автоматических входов
 const limiter = require('./middlewares/rate-limiter');
 
+const config = require('./movies.config');
+
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const routes = require('./routes/index');
@@ -20,8 +22,18 @@ const routes = require('./routes/index');
 const errorsHandler = require('./middlewares/errorsHandler');
 const NotFoundError = require('./errors/not-found-err');
 
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, DB_ADDRESS = config.dbUrlDev } = process.env;
 const app = express();
+
+mongoose.connect(DB_ADDRESS, {
+  useNewUrlParser: true,
+});
+
+// Подключаем логгер запросов перед limiter, иначе не будет записан запрос в логи
+app.use(requestLogger);
+
+app.use(helmet());
+app.use(limiter);
 
 app.use(cors({
   origin: ['localhost:3011', 'http://localhost:3011'],
@@ -29,30 +41,19 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
-app.use(helmet());
-app.use(limiter);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-mongoose.connect('mongodb://localhost:27017/moviesdb', {
-  useNewUrlParser: true,
-})
-  .catch((err) => {
-    throw err;
-  });
-
-// Подключаем логгер запросов
-app.use(requestLogger);
-
 app.use(routes);
-
-// Подключаем логгер ошибок
-app.use(errorLogger);
 
 // Если нет корректного маршрута
 app.use((req, res, next) => {
   next(new NotFoundError('Запрашиваемый ресурс не найден'));
 });
+
+// Подключаем логгер ошибок
+app.use(errorLogger);
 
 // Обработка ошибок Celebrate
 app.use(errors());
