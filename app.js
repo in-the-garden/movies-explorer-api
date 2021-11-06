@@ -36,7 +36,7 @@ app.use(helmet());
 app.use(limiter);
 
 app.use(cors({
-  origin: ['localhost:3011', 'http://localhost:3011'],
+  origin: ['localhost:3011', 'http://localhost:3011', 'http://movies.pupkova.nomoredomains.rocks', 'https://movies.pupkova.nomoredomains.rocks'],
   methods: ['GET', 'PUT', 'POST', ' DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,

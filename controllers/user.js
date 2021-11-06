@@ -78,7 +78,7 @@ module.exports.updateUserInfo = (req, res, next) => {
       return res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'MongoError' && err.code === 11000) {
+      if (err.code === 11000) {
         return next(new ConflictError('Пользователь с таким email уже зарегистрирован.'));
       }
       if (err.name === 'ValidationError' || err.name === 'CastError') {
